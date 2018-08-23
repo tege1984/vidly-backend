@@ -1,5 +1,5 @@
 const express = require("express");
-const joi = require("joi");
+const Joi = require("joi");
 const app = express();
 app.use(express.json());
 
@@ -23,9 +23,50 @@ app.get("/api/geners/:id", (req, res) => {
     return res.status(404).send("The gener with the given id is not found");
   res.send(gener);
 });
-app.post("/api/geners", (req, res) => {});
-app.put("/api/geners/:id", (req, res) => {});
-app.delete("/api/geners/:id", (req, res) => {});
+app.post("/api/geners", (req, res) => {
+  const { error } = generValidate(req.body);
+  if (error) return res.status(400).send(error.details[0].message);
+
+  const gener = {
+    id: geners.length + 1,
+    gener: req.body.gener
+  };
+
+  geners.push(gener);
+  res.send(gener);
+});
+
+app.put("/api/geners/:id", (req, res) => {
+  const gener = geners.find(g => g.id === parseInt(req.params.id));
+  if (!gener)
+    return res.status(404).send("The gener with the given id is not found");
+
+  const { error } = generValidate(req.body);
+  if (error) return res.status(400).send(error.details[0].message);
+
+  const index = geners.indexOf(gener);
+  geners[index].gener = req.body.gener;
+  res.send(gener);
+});
+app.delete("/api/geners/:id", (req, res) => {
+  const gener = geners.find(g => g.id === parseInt(req.params.id));
+  if (!gener)
+    return res.status(404).send("The gener with the given id is not found");
+
+  const index = geners.indexOf(gener);
+  geners.splice(index, 1);
+  res.send(gener);
+});
+
+function generValidate(gener) {
+  const schema = {
+    gener: Joi.string()
+      .min(3)
+      .required()
+  };
+
+  return Joi.validate(gener, schema);
+}
 
 const port = process.env.PORT || 3000;
 
